@@ -101,7 +101,7 @@ namespace kOS.Module
         [KSPField(isPersistant = true, guiName = "kOS Base Module Mass", guiActive = false, groupName = PAWGroup, groupDisplayName = PAWGroup)]
         public float baseModuleMass = 0F;  // this is the base mass added to a part for including the kOSProcessor, default to 0.
 
-        [KSPField(isPersistant = false, guiName = "kOS Disk Space", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup), UI_ChooseOption(scene = UI_Scene.Editor)]
+        [KSPField(isPersistant = false, guiName = "kOS Disk Space", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup), UI_FloatRange(scene = UI_Scene.Editor)]
         public string diskSpaceUI = "1024";
 
         [KSPField(isPersistant = true, guiName = "CPU/Disk Upgrade Cost", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup)]
@@ -375,12 +375,18 @@ namespace kOS.Module
             //populate diskSpaceUI selector
             diskSpaceUI = diskSpace.ToString();
             BaseField field = Fields["diskSpaceUI"];
-            UI_ChooseOption options = (UI_ChooseOption)field.uiControlEditor;
-            var sizeOptions = new string[3];
-            sizeOptions[0] = baseDiskSpace.ToString();
-            sizeOptions[1] = (baseDiskSpace * 2).ToString();
-            sizeOptions[2] = (baseDiskSpace * 4).ToString();
-            options.options = sizeOptions;
+
+            // Replace the UI control with a FloatRange slider
+            UI_FloatRange slider = new UI_FloatRange
+            {
+                minValue = baseDiskSpace.ToString(),
+                maxValue = (baseDiskSpace * 4).ToString(),
+                stepIncrement = (baseDiskSpace / 8).ToString(),
+                incrementSlide = (baseDiskSpace / 8).ToString()
+            };
+            field.uiControlEditor = slider;
+            field.guiActiveEditor = true;
+            field.guiName = "Disk Space";
         }
 
         //implement IPartMassModifier component
