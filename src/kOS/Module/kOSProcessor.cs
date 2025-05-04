@@ -101,8 +101,8 @@ namespace kOS.Module
         [KSPField(isPersistant = true, guiName = "kOS Base Module Mass", guiActive = false, groupName = PAWGroup, groupDisplayName = PAWGroup)]
         public float baseModuleMass = 0F;  // this is the base mass added to a part for including the kOSProcessor, default to 0.
 
-        [KSPField(isPersistant = false, guiName = "kOS Disk Space", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup), UI_ChooseOption(scene = UI_Scene.Editor)]
-        public string diskSpaceUI = "1024";
+        [KSPField(isPersistant = false, guiName = "kOS Disk Space", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup), UI_FloatRange(scene = UI_Scene.Editor)]
+        public float diskSpaceUI = 1024f; //needed for the slider, Could convert from String back into float or int. but works better and feels natural to have as a float to begin with
 
         [KSPField(isPersistant = true, guiName = "CPU/Disk Upgrade Cost", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup)]
         public float additionalCost = 0F;
@@ -111,7 +111,7 @@ namespace kOS.Module
         public float additionalMassGui = 0F;
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false)]
-        public float diskSpaceCostFactor = 0.0244140625F; //implies approx 100funds for 4096bytes of diskSpace
+        public float diskSpaceCostFactor = 0.0244140625F; //implies approx 100funds for 4096bytes of diskSpace. SliderNote: would recommend a small increase to: 0.0484140625F
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false)]
         public float diskSpaceMassFactor = 0.0000000048829F;  //implies approx 0.020kg for 4096bytes of diskSpace
@@ -376,11 +376,19 @@ namespace kOS.Module
             diskSpaceUI = diskSpace.ToString();
             BaseField field = Fields["diskSpaceUI"];
             UI_ChooseOption options = (UI_ChooseOption)field.uiControlEditor;
-            var sizeOptions = new string[3];
-            sizeOptions[0] = baseDiskSpace.ToString();
-            sizeOptions[1] = (baseDiskSpace * 2).ToString();
-            sizeOptions[2] = (baseDiskSpace * 4).ToString();
-            options.options = sizeOptions;
+            
+            UI_FloatRange slider = new UI_FloatRange
+            {
+                minValue = baseDiskSpace,
+                maxValue = baseDiskSpace * 8,
+                stepIncrement = baseDiskSpace / 4f,
+                scene = UI_Scene.Editor
+            };
+            
+            //These should be here, yes they are declared above but this is good practice to include parms when making the ui object
+            field.uiControlEditor = slider;
+            field.guiActiveEditor = true;
+            field.guiName = "KOS Disk Space";
         }
 
         //implement IPartMassModifier component
@@ -812,9 +820,10 @@ namespace kOS.Module
                     InitUI();
                 }
                 UpdateRP1TechLevel(true);
-                if (diskSpace != Convert.ToInt32(diskSpaceUI))
+                // This part is now just rounding from INT, this counters any issue with DiskSpace or BaseDiskSpace being incorrect or "Out of range"
+                if (diskSpace != Mathf.RoundToInt(diskSpaceUI)) //Tested in-game, no issues found
                 {
-                    diskSpace = Convert.ToInt32(diskSpaceUI);
+                    diskSpace = Mathf.RoundToInt(diskSpaceUI); ///Tested as well
                     UpdateCostAndMass();
                     GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
                 }
