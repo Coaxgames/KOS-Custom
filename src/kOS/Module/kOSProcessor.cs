@@ -373,14 +373,18 @@ namespace kOS.Module
         private void PopulateDiskSpaceUI()
         {
             //populate diskSpaceUI selector
-            diskSpaceUI = diskSpace.ToString();
+            // Set the initial value to current disk space
+            diskSpaceUI = diskSpace;
+    
+            // Get the field and setup the slider
             BaseField field = Fields["diskSpaceUI"];
+    
             
             UI_FloatRange slider = new UI_FloatRange
             {
                 minValue = baseDiskSpace,
                 maxValue = baseDiskSpace * 8,
-                stepIncrement = baseDiskSpace / 4f,
+                stepIncrement = baseDiskSpace / 8f,
                 scene = UI_Scene.Editor
             };
             
