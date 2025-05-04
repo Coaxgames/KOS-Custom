@@ -102,7 +102,7 @@ namespace kOS.Module
         public float baseModuleMass = 0F;  // this is the base mass added to a part for including the kOSProcessor, default to 0.
 
         [KSPField(isPersistant = false, guiName = "kOS Disk Space", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup), UI_FloatRange(scene = UI_Scene.Editor)]
-        public string diskSpaceUI = "1024";
+        public float diskSpaceUI = 1024f;
 
         [KSPField(isPersistant = true, guiName = "CPU/Disk Upgrade Cost", guiActive = false, guiActiveEditor = true, groupName = PAWGroup, groupDisplayName = PAWGroup)]
         public float additionalCost = 0F;
@@ -372,18 +372,20 @@ namespace kOS.Module
 
         private void PopulateDiskSpaceUI()
         {
-            //populate diskSpaceUI selector
-            diskSpaceUI = diskSpace.ToString();
+            // Set the initial value to current disk space
+            diskSpaceUI = diskSpace;
+            
+            // Get the field and setup the slider
             BaseField field = Fields["diskSpaceUI"];
-
-            // Replace the UI control with a FloatRange slider
+            
             UI_FloatRange slider = new UI_FloatRange
             {
-                minValue = baseDiskSpace.ToString(),
-                maxValue = (baseDiskSpace * 4).ToString(),
-                stepIncrement = (baseDiskSpace / 8).ToString(),
-                incrementSlide = (baseDiskSpace / 8).ToString()
+                minValue = baseDiskSpace,
+                maxValue = baseDiskSpace * 4,
+                stepIncrement = baseDiskSpace / 8f,
+                scene = UI_Scene.Editor
             };
+            
             field.uiControlEditor = slider;
             field.guiActiveEditor = true;
             field.guiName = "Disk Space";
@@ -818,9 +820,9 @@ namespace kOS.Module
                     InitUI();
                 }
                 UpdateRP1TechLevel(true);
-                if (diskSpace != Convert.ToInt32(diskSpaceUI))
+                if (diskSpace != Mathf.RoundToInt(diskSpaceUI))
                 {
-                    diskSpace = Convert.ToInt32(diskSpaceUI);
+                    diskSpace = Mathf.RoundToInt(diskSpaceUI);
                     UpdateCostAndMass();
                     GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
                 }
