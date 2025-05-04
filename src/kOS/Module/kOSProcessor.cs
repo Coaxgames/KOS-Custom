@@ -375,7 +375,6 @@ namespace kOS.Module
             //populate diskSpaceUI selector
             diskSpaceUI = diskSpace.ToString();
             BaseField field = Fields["diskSpaceUI"];
-            UI_ChooseOption options = (UI_ChooseOption)field.uiControlEditor;
             
             UI_FloatRange slider = new UI_FloatRange
             {
